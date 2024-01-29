@@ -11,7 +11,7 @@ let package = Package(
 		.visionOS(.v1)
 	],
 	products: [
-		.library(name: "EndpointBuilderURLSession", targets: ["EndpointBuilderURLSession"]),
+		.library(name: "EndpointBuilderURLSession", targets: ["EndpointBuilderURLSession"])
 	],
 	dependencies: [
 		.package(url: "https://github.com/apple/swift-http-types", from: "1.0.0"),
@@ -23,6 +23,12 @@ let package = Package(
 			dependencies: [
 				.product(name: "EndpointBuilder", package: "endpoint-builder"),
 				.product(name: "HTTPTypes", package: "swift-http-types")
+			]
+		),
+		.testTarget(
+			name: "EndpointBuilderURLSessionTests",
+			dependencies: [
+				.byName(name: "EndpointBuilderURLSession")
 			]
 		)
 	]
