@@ -33,7 +33,7 @@ extension EndpointBuilderURLSession {
 		{ JSONEncoder() }
 	}
 
-	var decoder: @Sendable () -> JSONDecoder {
+	public var decoder: @Sendable () -> JSONDecoder {
 		{ JSONDecoder() }
 	}
 

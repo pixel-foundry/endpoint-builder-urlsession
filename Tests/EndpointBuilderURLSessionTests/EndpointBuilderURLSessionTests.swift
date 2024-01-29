@@ -1,5 +1,5 @@
 import EndpointBuilder
-@testable import EndpointBuilderURLSession
+import EndpointBuilderURLSession
 import HTTPTypes
 import RoutingKit
 import XCTest
