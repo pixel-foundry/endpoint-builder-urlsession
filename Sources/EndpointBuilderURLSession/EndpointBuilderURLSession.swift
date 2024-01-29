@@ -6,31 +6,35 @@ import FoundationNetworking
 import HTTPTypes
 
 /// An API endpoint client that uses `URLSession` to create requests
-public struct EndpointBuilderURLSession: Sendable {
+public protocol EndpointBuilderURLSession: Sendable {
 
 	/// The base server URL on which endpoint paths will be appended
-	public let serverBaseURL: URL
+	var serverBaseURL: URL { get }
 
 	/// The URLSession object that will make requests
-	public let urlSession: @Sendable () -> URLSession
+	var urlSession: @Sendable () -> URLRequestHandler { get }
 
 	/// JSON encoder
-	public let encoder: @Sendable () -> JSONEncoder
+	var encoder: @Sendable () -> JSONEncoder { get }
 
 	/// JSON decoder
-	public let decoder: @Sendable () -> JSONDecoder
+	var decoder: @Sendable () -> JSONDecoder { get }
 
-	/// Creates a new `EndpointBuilderURLSession`.
-	public init(
-		serverBaseURL: URL,
-		urlSession: @Sendable @escaping () -> URLSession = { URLSession.shared },
-		encoder: @Sendable @escaping () -> JSONEncoder = { JSONEncoder() },
-		decoder: @Sendable @escaping () -> JSONDecoder = { JSONDecoder() }
-	) {
-		self.serverBaseURL = serverBaseURL
-		self.urlSession = urlSession
-		self.encoder = encoder
-		self.decoder = decoder
+}
+
+// Default values
+extension EndpointBuilderURLSession {
+
+	public var urlSession: @Sendable () -> URLSession {
+		{ URLSession.shared }
+	}
+
+	public var encoder: @Sendable () -> JSONEncoder {
+		{ JSONEncoder() }
+	}
+
+	var decoder: @Sendable () -> JSONDecoder {
+		{ JSONDecoder() }
 	}
 
 }
@@ -70,7 +74,8 @@ extension EndpointBuilderURLSession {
 		}
 
 		// perform request
-		return try await urlSession().responseData(for: request)
+		let (data, _) = try await urlSession().data(for: request)
+		return data
 	}
 
 }
@@ -86,27 +91,6 @@ extension URL {
 		} else {
 			return self.appendingPathComponent(path)
 		}
-		#endif
-	}
-
-}
-
-extension URLSession {
-
-	func responseData(for request: URLRequest) async throws -> Data {
-		#if canImport(FoundationNetworking)
-		await withCheckedContinuation { continuation in
-			self.dataTask(with: request) { data, _, _ in
-				guard let data = data else {
-					continuation.resume(returning: Data())
-					return
-				}
-				continuation.resume(returning: data)
-			}.resume()
-		}
-		#else
-		let (data, _) = try await self.data(for: request)
-		return data
 		#endif
 	}
 
