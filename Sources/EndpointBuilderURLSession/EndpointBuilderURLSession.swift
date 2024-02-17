@@ -30,11 +30,19 @@ extension EndpointBuilderURLSession {
 	}
 
 	public var encoder: @Sendable () -> JSONEncoder {
-		{ JSONEncoder() }
+		{
+			let encoder = JSONEncoder()
+			encoder.dateEncodingStrategy = .iso8601
+			return encoder
+		}
 	}
 
 	public var decoder: @Sendable () -> JSONDecoder {
-		{ JSONDecoder() }
+		{ 
+			let decoder = JSONDecoder()
+			decoder.dateDecodingStrategy = .iso8601
+			return decoder
+		}
 	}
 
 }
