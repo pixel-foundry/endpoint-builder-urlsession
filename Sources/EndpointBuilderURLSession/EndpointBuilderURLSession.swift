@@ -50,13 +50,17 @@ extension EndpointBuilderURLSession {
 	/// A request with a response body
 	@inlinable
 	public func request<E: Endpoint>(_ endpoint: E) async throws -> E.Response {
-		let data = try await requestData(endpoint)
-		return try decoder().decode(E.responseType, from: data)
+		let (data, response) = try await requestData(endpoint)
+		do {
+			return try decoder().decode(E.responseType, from: data)
+		} catch {
+			throw EndpointBuilderError.unableToDeserialize(data: data, response: response)
+		}
 	}
 
 	@discardableResult
 	@usableFromInline
-	func requestData<E: Endpoint>(_ endpoint: E) async throws -> Data {
+	func requestData<E: Endpoint>(_ endpoint: E) async throws -> (Data, URLResponse) {
 		// construct URL
 		let url: URL = serverBaseURL.appendingPath(endpoint.path)
 
@@ -74,8 +78,8 @@ extension EndpointBuilderURLSession {
 		}
 
 		// perform request
-		let (data, _) = try await urlSession().data(for: request)
-		return data
+		let (data, response) = try await urlSession().data(for: request)
+		return (data, response)
 	}
 
 }
@@ -94,4 +98,8 @@ extension URL {
 		#endif
 	}
 
+}
+
+public enum EndpointBuilderError: Error {
+	case unableToDeserialize(data: Data, response: URLResponse)
 }
